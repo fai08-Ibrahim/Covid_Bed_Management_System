@@ -2,6 +2,8 @@
 {% block title %} User Signup {% endblock title %}
 {% block form %}
 <h2>Sign Up</h2>
+{% include 'message.html' %}
+
 
 <div class="row">
   <div class="col-md-4"></div>
@@ -22,7 +24,7 @@
         <button type="submit" class="btn btn-success">Sign Up</button>
         
         <br> <br>
-        <a href="/userlogin" class="text-success">Click here to Log in</a>
+        <a href="/login" class="text-success">Click here to Log in</a>
       </form>
   </div>
 

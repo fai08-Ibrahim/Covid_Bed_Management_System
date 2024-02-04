@@ -65,13 +65,23 @@
           <li><a class="nav-link scrollto " href="/">Home</a></li>
           <li><a class="nav-link scrollto" href="#departments">Patient Details</a></li>
           <li><a class="nav-link scrollto" href="#doctors">Available Beds</a></li>
+
+{% if current_user.is_authenticated %}
+          <li class="dropdown"><a href="#"><span>Welcome {{current_user.email}}</span> <i class="bi bi-chevron-down"></i></a>
+            <ul>
+              <li><a href="/logout">User Logout</a></li>
+            </ul>
+          </li>
+{% else %}
           <li class="dropdown"><a href="#"><span>Sign In</span> <i class="bi bi-chevron-down"></i></a>
             <ul>
-              <li><a href="/userlogin">User Login</a></li>
+              <li><a href="/login">User Login</a></li>
               <li><a href="/hospitallogin">Hospital Login</a></li>
               <li><a href="/admin">Admin Login</a></li>
             </ul>
-          </li>
+          </li>        
+{% endif %}
+
           <li><a class="nav-link scrollto" href="#contact">Contact</a></li>
         </ul>
         <i class="bi bi-list mobile-nav-toggle"></i>

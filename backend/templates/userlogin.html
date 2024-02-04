@@ -8,7 +8,8 @@
   <div class="col-md-4">
 
     <!-- In the Login page, only the required data related to the SRF id and DOB are authenticated -->
-    <form action="" method="post">
+    <form action="/login" method="post">
+      {% include 'message.html' %}
       <div class="form-group">
         <input type="text" class="form-control mt-2" name="srf" required placeholder="Enter the SRF ID">    
       </div>
@@ -21,7 +22,7 @@
         <button type="submit" class="btn btn-success">Log In</button>
 
         <br> <br>
-        <a href="/usersignup" class="text-danger">New User? Go to Signup</a>
+        <a href="/signup" class="text-danger">New User? Go to Signup</a>
 
     </form>
   </div>
