@@ -1,4 +1,5 @@
 
+import json
 from flask import Flask,redirect,render_template, request, flash, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask.globals import request, session
@@ -7,6 +8,7 @@ from flask_login import UserMixin
 from sqlalchemy import create_engine, text
 from werkzeug.security import generate_password_hash, check_password_hash 
 import mysql.connector
+from flask_mail import Mail
 
 
 # mydatabase connection
@@ -18,15 +20,13 @@ app.secret_key="fathyibrahim"
 login_manager=LoginManager(app)
 login_manager.login_view='login'
 
-# app.config['SQLALCHEMY_DATABASE_URI']='mysql://username:pass@localhost:port/databasename'
-
-# the wrong version before installing the SQL Python connector
-# app.config['SQLALCHEMY_DATABASE_URI']='mysql://root:@localhost/covid'
-
 # After installing the SQL Python connector
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:@localhost:3307/covid'
 
 db = SQLAlchemy(app)
+
+with open('config.json','r') as f:
+  params=json.load(f)["params"]
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -39,7 +39,15 @@ class User(UserMixin,db.Model):
   dob=db.Column(db.String(1000))
   def get_id(self):
     return (self.srfid) 
+  
 
+class Hospitaluser(UserMixin,db.Model):
+  hid=db.Column(db.Integer,primary_key=True)
+  hcode=db.Column(db.Integer,unique=True)
+  email=db.Column(db.String(100))
+  password=db.Column(db.String(1000))
+  def get_id(self):
+    return (self.hid) 
 
 
 @app.route("/")
@@ -90,6 +98,20 @@ def login():
   return render_template("userlogin.html")
 
 
+@app.route('/admin', methods=['POST', 'GET'])
+def admin():
+  if request.method=="POST":
+    username=request.form.get('username')
+    password=request.form.get('password')
+    if(username==params['username'] and password==params['password']):
+      session['user']=username
+      flash("Login is successful","info")
+      return render_template("addHosUser.html")
+    else:
+      flash("Invalid Credentials","danger")
+
+  return render_template("admin.html")
+
 
 @app.route("/logout")
 @login_required
@@ -99,4 +121,37 @@ def logout():
   return redirect(url_for('login'))
 
 
-app.run(debug=True)
+@app.route("/addHospitalUser", methods=['POST','GET'])
+def hospitalUser():
+  if 'user' in session and session['user'] == params["username"]:
+    if request.method == 'POST':
+      hcode=request.form.get('hcode')
+      email=request.form.get('email')
+      password=request.form.get('password')
+      encpassword=generate_password_hash(password)
+      user_email=Hospitaluser.query.filter_by(email=email).first()
+      if user_email:
+        flash("This Email is already in use.", "warning")
+
+      with db.engine.connect() as conn:
+        query = text(f"INSERT INTO `hospitaluser` (`hcode`,`email`, `password`) VALUES ('{hcode}','{email}','{encpassword}') ")
+        new_user = conn.execute(query)
+        conn.commit()
+
+      flash("DATA INSERTED", "success")
+
+  else:
+    flash("Please, log in and try again.", "warning")
+    return redirect(url_for('admin'))
+
+
+@app.route("/logoutadmin")
+def logoutadmin():
+
+  session.pop('user')
+  flash("You have been logged out successfully!", "primary")
+
+  return redirect(url_for('admin'))
+
+if  __name__=='__main__':
+  app.run(debug=True)
